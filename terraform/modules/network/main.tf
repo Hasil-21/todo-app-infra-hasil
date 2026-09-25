@@ -46,8 +46,7 @@ resource "aws_eip" "this" {
 }
 
 resource "aws_nat_gateway" "this" {
-    count = 1
-    subnet_id = aws_subnet.public[count.index].id
+    subnet_id = aws_subnet.public[1].id
     allocation_id = aws_eip.this.allocation_id
 
     tags = {
@@ -59,11 +58,10 @@ resource "aws_nat_gateway" "this" {
 
 resource "aws_route_table" "private" {
     vpc_id = aws_vpc.this.id
-    count = 1
 
     route {
         cidr_block = "0.0.0.0/0"
-        nat_gateway_id = aws_nat_gateway.this[count.index].id
+        nat_gateway_id = aws_nat_gateway.this.id
     }
 
     tags = {
@@ -73,8 +71,8 @@ resource "aws_route_table" "private" {
 
 resource "aws_route_table_association" "private" {
     count = length(var.private_subnet_ids)
+    route_table_id = aws_route_table.private.id
     subnet_id = aws_subnet.private[count.index].id
-    route_table_id = aws_route_table.public.id
 }
 
 resource "aws_route_table" "public" {
