@@ -11,3 +11,11 @@ variable "argocd_chart_version" {
   type    = string
   default = "7.7.11"
 }
+
+variable "lb_controller_role_arn" {
+  type = string
+}
+
+variable "vpc_id" {
+  type = string
+}

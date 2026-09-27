@@ -1,0 +1,20 @@
+# Use an official Node LTS image, alpine variant for smaller size
+FROM node:20-alpine
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy only package files first (for Docker layer caching)
+COPY package.json package-lock.json ./
+
+# Install dependencies (use ci for reproducible installs from lockfile)
+RUN npm ci --omit=dev
+
+# Now copy the rest of your application code
+COPY . .
+
+# Expose the port your Express app listens on
+EXPOSE 5000
+
+# Command to run the app
+CMD ["node", "server.js"]

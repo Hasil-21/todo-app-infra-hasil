@@ -1,0 +1,10 @@
+node_modules
+.env
+.git
+.gitignore
+README.md
+build
+dist
+npm-debug.log
+*.md
+AWS-Practice-Guide*
