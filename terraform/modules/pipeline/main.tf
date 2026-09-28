@@ -151,8 +151,40 @@ resource "aws_codebuild_project" "backend" {
     }
 }
 
-resource "aws_codepipeline" "backend" {
-    name = "${var.name}-bhackend-codepipeline"
+resource "aws_codebuild_project" "frontend" {
+  name = "${var.name}-frontend-build"
+  service_role = aws_iam_role.codebuild.arn
+
+  source {
+    type = "CODEPIPELINE"
+    buildspec = "todo-app/frontend/buildspec.yaml"
+  }
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    type = "LINUX_CONTAINER"
+    compute_type = "BUILD_GENERAL1_SMALL"
+    image = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    privileged_mode = true
+
+    environment_variable {
+      name = "ECR_REPO_URI"
+      value = "292578125952.dkr.ecr.ap-south-1.amazonaws.com/todo-app-frontend" 
+    }
+
+    environment_variable {
+      name = "GITHUB_TOKEN"
+      value = aws_secretsmanager_secret.github_token.arn
+      type = "SECRETS_MANAGER"
+    }
+  }
+}
+
+resource "aws_codepipeline" "project" {
+    name = "${var.name}-project-codepipeline"
     role_arn = aws_iam_role.codepipeline.arn
 
     artifact_store {
@@ -180,7 +212,8 @@ resource "aws_codepipeline" "backend" {
     }
 
     stage {
-      name = "Build"
+      name = "Build-BE"
+
       action {
         name = "Build"
         category = "Build"
@@ -188,11 +221,29 @@ resource "aws_codepipeline" "backend" {
         version = 1
         provider = "CodeBuild"
         input_artifacts = ["source_output"]
-        output_artifacts = ["build_output"]
+        output_artifacts = ["build_output_BE"]
 
         configuration = {
           ProjectName = aws_codebuild_project.backend.name
         }
+      }
+    }
+
+    stage {
+      name = "Build-FE"
+
+      action {
+        name = "Build"
+        category = "Build"
+        version = 1
+        owner = "AWS"
+        provider = "CodeBuild"
+        input_artifacts = ["source_output"]
+        output_artifacts = ["build_output_FE"]
+
+        configuration = {
+          ProjectName = aws_codebuild_project.frontend.name
+        } 
       }
     }
 }
