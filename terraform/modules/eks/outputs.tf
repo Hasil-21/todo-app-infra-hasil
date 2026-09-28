@@ -13,3 +13,7 @@ output "openid_connect_arn" {
 output "openid_connect_url" {
   value = aws_iam_openid_connect_provider.oidc.url
 }
+
+output "rds_eks_cluster_sg" {
+  value = aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id
+}

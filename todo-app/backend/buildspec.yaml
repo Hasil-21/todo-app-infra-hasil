@@ -1,0 +1,29 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+      - chmod +x /usr/bin/yq
+
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_REPO_URI
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+
+  build:
+    commands:
+      - docker build --provenance=false --sbom=false -t $ECR_REPO_URI:$IMAGE_TAG .
+      - docker push $ECR_REPO_URI:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - git config --global user.email "codebuild@todo-app.local"
+      - git config --global user.name "CodeBuild"
+      - git clone https://$GITHUB_TOKEN@github.com/Hasil-21/todo-app-gitops-hasil.git gitops
+      - cd gitops
+      - |
+        yq eval -i '(.images[] | select(.name == "292578125952.dkr.ecr.ap-south-1.amazonaws.com/todo-app-backend") | .newTag) = "'"$IMAGE_TAG"'"' backend/overlays/dev/kustomization.yaml
+      - git add backend/overlays/dev/kustomization.yaml
+      - git commit -m "Update backend image to $IMAGE_TAG [skip ci]"
+      - git push origin main

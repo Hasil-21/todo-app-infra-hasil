@@ -12,7 +12,7 @@ module "rds" {
   vpc_id = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
   db_ingress_cidr = []
-  db_ingress_sg = [module.eks.eks-sg]
+  db_ingress_sg = [module.eks.eks-sg,module.eks.rds_eks_cluster_sg]
 }
 
 module "eks" {
@@ -28,4 +28,10 @@ module "iam" {
 
   openid_connect_arn = module.eks.openid_connect_arn
   openid_connect_url = module.eks.openid_connect_url
+}
+
+module "pipeline" {
+  source = "../../../modules/pipeline"
+
+  github_token = var.github_token
 }
