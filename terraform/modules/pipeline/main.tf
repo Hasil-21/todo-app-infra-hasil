@@ -125,7 +125,7 @@ resource "aws_codebuild_project" "backend" {
 
     source {
       type = "CODEPIPELINE"
-      buildspec = "Todo-app/backend/buildspec.yaml"
+      buildspec = "todo-app/backend/buildspec.yaml"
     }
 
     environment {
@@ -135,13 +135,13 @@ resource "aws_codebuild_project" "backend" {
       privileged_mode = true
 
       environment_variable {
-        name = "ECR_REPO_URL"
+        name = "ECR_REPO_URI"
         value = "292578125952.dkr.ecr.ap-south-1.amazonaws.com/todo-app-backend"
       }
 
       environment_variable {
         name = "GITHUB_TOKEN"
-        value = var.github_token
+        value = aws_secretsmanager_secret.github_token.arn
         type = "SECRETS_MANAGER"
       }
     }

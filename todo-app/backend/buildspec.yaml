@@ -13,6 +13,8 @@ phases:
 
   build:
     commands:
+      - echo $ECR_REPO_URI
+      - echo $IMAGE_TAG
       - docker build --provenance=false --sbom=false -t $ECR_REPO_URI:$IMAGE_TAG .
       - docker push $ECR_REPO_URI:$IMAGE_TAG
 
