@@ -54,6 +54,62 @@ resource "helm_release" "prometheus" {
   depends_on = [helm_release.lb_controller]
 }
 
+resource "helm_release" "grafana" {
+  name             = "grafana"
+  chart            = "grafana"
+  repository       = "https://grafana.github.io/helm-charts"
+  version          = "8.5.1"
+  namespace        = "monitoring"
+  create_namespace = false
+
+  set{
+    name = "adminUser"
+    value = "admin"
+  }
+
+  set_sensitive {
+    name = "adminPassword"
+    value = "adminPassword" 
+  }
+
+set {
+    name  = "persistence.enabled"
+    value = "false"
+  }
+
+  set {
+    name  = "datasources.datasources\\.yaml.apiVersion"
+    value = "1"
+  }
+
+  set {
+    name  = "datasources.datasources\\.yaml.datasources[0].name"
+    value = "Prometheus"
+  }
+
+  set {
+    name  = "datasources.datasources\\.yaml.datasources[0].type"
+    value = "prometheus"
+  }
+
+  set {
+    name  = "datasources.datasources\\.yaml.datasources[0].url"
+    value = "http://prometheus-server.monitoring.svc.cluster.local"
+  }
+
+  set {
+    name  = "datasources.datasources\\.yaml.datasources[0].access"
+    value = "proxy"
+  }
+
+  set {
+    name  = "datasources.datasources\\.yaml.datasources[0].isDefault"
+    value = "true"
+  }
+
+  depends_on = [helm_release.prometheus]
+}
+
 resource "helm_release" "lb_controller" {
   name = "aws-load-balancer-controller"
   chart = "aws-load-balancer-controller"

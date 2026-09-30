@@ -27,6 +27,7 @@ module "iam" {
   source = "../../../modules/iam"
 
   openid_connect_arn = module.eks.openid_connect_arn
+  cluster_name = var.cluster_name
   openid_connect_url = module.eks.openid_connect_url
 }
 

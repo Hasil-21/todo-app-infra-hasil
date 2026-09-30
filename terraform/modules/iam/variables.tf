@@ -10,3 +10,7 @@ variable "openid_connect_arn"{
 variable "openid_connect_url" {
   type = string
 }
+
+variable "cluster_name" {
+  type = string
+}
