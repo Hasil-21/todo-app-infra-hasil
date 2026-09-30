@@ -22,7 +22,7 @@ resource "aws_s3_bucket_public_access_block" "pipeline_artifacts" {
 #Secret
 
 resource "aws_secretsmanager_secret" "github_token" {
-    name = "todo-app/github-token"
+    name = "todo-app/github-token-3"
 }
 
 resource "aws_secretsmanager_secret_version" "github_token" {
@@ -62,7 +62,7 @@ resource "aws_iam_role_policy" "codepipeline" {
         },
         {
             Effect = "Allow"
-            Action = ["codebuild:BatchGetBuilds", "codebuild:StartBuild"]
+            Action = ["codebuild:BatchGetBuilds", "codebuild:StartBuild","logs:CreateLogStream"]
             Resource = "*"
         }]
     })

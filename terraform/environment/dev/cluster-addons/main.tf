@@ -41,6 +41,19 @@ resource "kubernetes_service_account" "lb_controller" {
   }
 }
 
+
+resource "helm_release" "prometheus" {
+  name = "prometheus"
+  chart = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  version = "29.35.0"
+  namespace = "monitoring"
+  create_namespace = true
+  timeout = 600
+
+  depends_on = [helm_release.lb_controller]
+}
+
 resource "helm_release" "lb_controller" {
   name = "aws-load-balancer-controller"
   chart = "aws-load-balancer-controller"
