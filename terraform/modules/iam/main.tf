@@ -77,3 +77,19 @@ resource "aws_eks_addon" "ebs_csi" {
   addon_name               = "aws-ebs-csi-driver"
   service_account_role_arn = aws_iam_role.ebs_csi.arn
 }
+
+resource "kubernetes_storage_class" "gp2_csi" {
+  metadata {
+    name = "gp2-csi"
+    annotations = {
+      "storageclass.kubernetes.io/is-default-class" = "true"
+    }
+  }
+  storage_provisioner = "ebs.csi.aws.com"
+  volume_binding_mode = "WaitForFirstConsumer"
+  parameters = {
+    type = "gp2"
+  }
+
+  depends_on = [aws_eks_addon.ebs_csi]
+}
