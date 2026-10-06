@@ -71,25 +71,3 @@ resource "aws_iam_role_policy_attachment" "ebs_csi" {
   role       = aws_iam_role.ebs_csi.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
-
-resource "aws_eks_addon" "ebs_csi" {
-  cluster_name             = var.cluster_name
-  addon_name               = "aws-ebs-csi-driver"
-  service_account_role_arn = aws_iam_role.ebs_csi.arn
-}
-
-resource "kubernetes_storage_class" "gp2_csi" {
-  metadata {
-    name = "gp2-csi"
-    annotations = {
-      "storageclass.kubernetes.io/is-default-class" = "true"
-    }
-  }
-  storage_provisioner = "ebs.csi.aws.com"
-  volume_binding_mode = "WaitForFirstConsumer"
-  parameters = {
-    type = "gp2"
-  }
-
-  depends_on = [aws_eks_addon.ebs_csi]
-}
