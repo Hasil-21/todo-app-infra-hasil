@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { metricsMiddleware, metricsHandler } = require('./metrics');
 
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
@@ -14,9 +15,11 @@ app.use(express.json());
 // Simple health check — this is also a good target for an ALB /
 // API Gateway health check once this is deployed on AWS.
 app.get('/health', (req, res) => res.json({status : 'ok'}));
-
+app.use(metricsMiddleware);        
+app.get('/metrics', metricsHandler);
 app.use('/api', authRoutes);
 app.use('/api/tasks', taskRoutes);
+
 
 const server = app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);

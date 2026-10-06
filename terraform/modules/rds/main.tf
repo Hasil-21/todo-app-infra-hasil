@@ -4,14 +4,14 @@ resource "random_password" "db" {
     min_numeric = 2
     min_lower = 2
     min_upper = 2
-    override_special = "!#$%^&*()-_=+[]{}<>:?"
+    override_special = "!#$%^&*()-_=+<>:?"
 }
 
 resource "aws_secretsmanager_secret" "db" {
-    name = "${var.name}-db-password-6-10-2026"
+    name = "${var.name}-db-password-6-10-2026-2"
 
     tags = {
-        Name = "${var.name}-db-password-6-10-2026"
+        Name = "${var.name}-db-password-6-10-2026-2"
     }
 }
 
