@@ -145,6 +145,11 @@ resource "helm_release" "lb_controller" {
   depends_on = [ kubernetes_service_account.lb_controller ]
 }
 
+data "aws_eks_addon" "ebs_csi" {
+  cluster_name = var.cluster_name
+  addon_name   = "aws-ebs-csi-driver"
+}
+
 resource "kubernetes_storage_class" "gp2_csi" {
   metadata {
     name = "gp2-csi"
@@ -157,4 +162,6 @@ resource "kubernetes_storage_class" "gp2_csi" {
   parameters = {
     type = "gp2"
   }
+
+  depends_on = [data.aws_eks_addon.ebs_csi]
 }
