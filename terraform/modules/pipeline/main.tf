@@ -22,7 +22,7 @@ resource "aws_s3_bucket_public_access_block" "pipeline_artifacts" {
 #Secret
 
 resource "aws_secretsmanager_secret" "github_token" {
-    name = "todo-app/github-token-7-10-2026"
+    name = "todo-app/github-token-8-10-2026"
 }
 
 resource "aws_secretsmanager_secret_version" "github_token" {

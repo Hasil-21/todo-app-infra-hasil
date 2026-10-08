@@ -165,3 +165,35 @@ resource "kubernetes_storage_class" "gp2_csi" {
 
   depends_on = [data.aws_eks_addon.ebs_csi]
 }
+
+resource "kubernetes_namespace" "logging" {
+  metadata {
+    name = "logging"
+  }
+}
+
+resource "helm_release" "eck_operator" {
+  name             = "elastic-operator"
+  repository       = "https://helm.elastic.co"
+  chart            = "eck-operator"
+  namespace        = "elastic-system"
+  create_namespace = true
+  timeout          = 600
+  cleanup_on_fail  = true
+
+  depends_on = [kubernetes_storage_class.gp2_csi]
+}
+
+resource "helm_release" "fluent_bit" {
+  name            = "fluent-bit"
+  repository      = "https://fluent.github.io/helm-charts"
+  chart           = "fluent-bit"
+  namespace       = kubernetes_namespace.logging.metadata[0].name
+  timeout         = 600
+  cleanup_on_fail = true
+  
+
+  values = [file("${path.module}/fluent-bit-values.yaml")]
+
+  depends_on = [helm_release.eck_operator]
+}

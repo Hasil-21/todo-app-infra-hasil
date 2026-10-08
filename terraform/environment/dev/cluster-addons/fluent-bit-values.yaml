@@ -1,0 +1,52 @@
+env:
+  - name: ES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: logs-es-elastic-user
+        key: elastic
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+
+tolerations:
+  - operator: Exists
+
+config:
+  inputs: |
+    [INPUT]
+        Name              tail
+        Path              /var/log/containers/*.log
+        multiline.parser  docker, cri
+        Tag               kube.*
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+
+  filters: |
+    [FILTER]
+        Name                kubernetes
+        Match               kube.*
+        Merge_Log           On
+        Keep_Log            Off
+        Annotations         Off
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude On
+
+  outputs: |
+    [OUTPUT]
+        Name                es
+        Match               kube.*
+        Host                logs-es-http.logging.svc.cluster.local
+        Port                9200
+        HTTP_User           elastic
+        HTTP_Passwd         ${ES_PASSWORD}
+        tls                 On
+        tls.verify          Off
+        Suppress_Type_Name  On
+        Logstash_Format     On
+        Logstash_Prefix     todo-logs
+        Replace_Dots        On
+        Retry_Limit         False
