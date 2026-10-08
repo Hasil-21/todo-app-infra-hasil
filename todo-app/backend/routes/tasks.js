@@ -58,11 +58,11 @@ router.post('/', async (req, res) => {
       [title, description || null, status]
     );
     const newTask = result.rows[0];
-    res.status(201).json(result.rows[0]);
     log.info(
-      { event: 'task.created', task_id: task.id, task_status: task.status, title_length: title.trim().length },
+      { event: 'task.created', task_id: newTask.id, task_status: newTask.status, title_length: title.trim().length },
       'task created'
     );
+    return res.status(201).json(newTask);
   } catch (err) {
     console.error('Error creating task:', err);
     res.status(500).json({ message: 'Server error' });
@@ -88,8 +88,8 @@ router.patch('/:id/status', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Task not found' });
     }
-
-    res.json(result.rows[0]);
+    log.info({ event: 'task.completed', task_id: result.id }, 'task completed');
+    return res.json(result.rows[0]);
   } catch (err) {
     console.error('Error updating task status:', err);
     res.status(500).json({ message: 'Server error' });
@@ -106,8 +106,8 @@ router.delete('/:id', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Task not found' });
     }
-
-    res.json({ message: 'Task deleted', task: result.rows[0] });
+    log.info({ event: 'task.deleted', task_id: result.rows[0] }, 'task deleted');
+    return res.status(204).end();
   } catch (err) {
     console.error('Error deleting task:', err);
     res.status(500).json({ message: 'Server error' });
