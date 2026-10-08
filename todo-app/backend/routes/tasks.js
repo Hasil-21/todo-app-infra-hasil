@@ -1,8 +1,8 @@
 const express = require('express');
-const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
-const snsClient = new SNSClient({region: process.env.AWS_REGION});
 const router = express.Router();
 const pool = require('../db');
+const logger = require('../logger');
+const { tasksCreated } = require('../metrics');
 
 // GET /api/tasks?page=1&limit=10 - list tasks with pagination
 router.get('/', async (req, res) => {
@@ -44,6 +44,7 @@ router.get('/', async (req, res) => {
 // POST /api/tasks - create a task (used by the "add task" page)
 router.post('/', async (req, res) => {
   const { title, description, status } = req.body;
+  const log = req.log || logger;
 
   if (!title) {
     return res.status(400).json({ message: 'Task title is required' });
@@ -57,17 +58,11 @@ router.post('/', async (req, res) => {
       [title, description || null, status]
     );
     const newTask = result.rows[0];
-
-    try {
-      await snsClient.send(new PublishCommand({
-        TopicArn: process.env.SNSTOPIC,
-        Message: JSON.stringify({ event: 'task_created', task: newTask }),
-      }));
-    } catch (snsErr) {
-      console.error('SNS publish failed (non-fatal):', snsErr);
-    }
-
     res.status(201).json(result.rows[0]);
+    log.info(
+      { event: 'task.created', task_id: task.id, task_status: task.status, title_length: title.trim().length },
+      'task created'
+    );
   } catch (err) {
     console.error('Error creating task:', err);
     res.status(500).json({ message: 'Server error' });
