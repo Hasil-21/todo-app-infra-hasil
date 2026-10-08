@@ -59,7 +59,7 @@ router.post('/', async (req, res) => {
     );
     const newTask = result.rows[0];
     log.info(
-      { event: 'task.created', task_id: newTask.id, task_status: newTask.status, title_length: title.trim().length },
+      { event: 'task.created', task_id: newTask.id, task_status: newTask.status, title_length: title.trim().length , log: "task created"},
       'task created'
     );
     return res.status(201).json(newTask);
