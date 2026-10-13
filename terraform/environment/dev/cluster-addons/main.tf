@@ -41,6 +41,40 @@ resource "kubernetes_service_account" "lb_controller" {
   }
 }
 
+resource "helm_release" "lb_controller" {
+  name = "aws-load-balancer-controller"
+  chart = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  version = "1.8.1"
+  namespace = "kube-system"
+
+  set{
+    name = "clusterName"
+    value = var.cluster_name
+  }
+
+  set {
+    name = "serviceAccount.create"
+    value = "false"
+  }
+
+  set {
+    name = "region"
+    value = "ap-south-1"
+  }
+
+  set {
+    name = "serviceAccount.name"
+    value = kubernetes_service_account.lb_controller.metadata[0].name
+  }
+
+  set {
+    name = "vpcId"
+    value = var.vpc_id
+  }
+
+  depends_on = [ kubernetes_service_account.lb_controller ]
+}
 
 resource "helm_release" "prometheus" {
   name = "prometheus"
@@ -108,41 +142,6 @@ set {
   }
 
   depends_on = [helm_release.prometheus]
-}
-
-resource "helm_release" "lb_controller" {
-  name = "aws-load-balancer-controller"
-  chart = "aws-load-balancer-controller"
-  repository = "https://aws.github.io/eks-charts"
-  version = "1.8.1"
-  namespace = "kube-system"
-
-  set{
-    name = "clusterName"
-    value = var.cluster_name
-  }
-
-  set {
-    name = "serviceAccount.create"
-    value = "false"
-  }
-
-  set {
-    name = "region"
-    value = "ap-south-1"
-  }
-
-  set {
-    name = "serviceAccount.name"
-    value = kubernetes_service_account.lb_controller.metadata[0].name
-  }
-
-  set {
-    name = "vpcId"
-    value = var.vpc_id
-  }
-
-  depends_on = [ kubernetes_service_account.lb_controller ]
 }
 
 data "aws_eks_addon" "ebs_csi" {
